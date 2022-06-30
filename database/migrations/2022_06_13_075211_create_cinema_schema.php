@@ -19,7 +19,7 @@ class CreateCinemaSchema extends Migration
      **Movie exploration**
      * As a user I want to see which films can be watched and at what times
      * As a user I want to only see the shows which are not booked out
-
+    
      **Show administration**
      * As a cinema owner I want to run different films at different times
      * As a cinema owner I want to run multiple films at the same time in different locations
@@ -37,7 +37,53 @@ class CreateCinemaSchema extends Migration
      */
     public function up()
     {
-        throw new \Exception('implement in coding task 4, you can ignore this exception if you are just running the initial migrations.');
+        Schema::create('movies', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->boolean('status');
+            $table->timestamps();
+        });
+
+        Schema::create('movie_shows', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('movie_id');
+            $table->string('show_name');
+            $table->string('location');
+            $table->integer('number_of_seats');
+            $table->time('start');
+            $table->time('end');
+            $table->boolean('status');
+            $table->timestamps();
+
+            $table->foreign('movie_id')->references('id')->on('movies')->onDelete('cascade');
+        });
+
+        Schema::create('prices', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('movie_show_id');
+            $table->decimal('price', 10, 2);
+            $table->string('seat_type');
+            $table->integer('how_many_percent');
+            $table->boolean('status');
+            $table->timestamps();
+
+            $table->foreign('movie_show_id')->references('id')->on('movie_shows')->onDelete('cascade');
+        });
+
+        Schema::create('booking', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('movie_show_id');
+            $table->foreignId('user_id');
+            $table->foreignId('price_id');
+            $table->integer('booked_seats');
+            $table->boolean('status');
+            $table->timestamps();
+
+            $table->foreign('movie_show_id')->references('id')->on('movie_shows')->onDelete('cascade');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('price_id')->references('id')->on('prices')->onDelete('cascade');
+        });
+        // throw new \Exception('implement in coding task 4, you can ignore this exception if you are just running the initial migrations.');
     }
 
     /**
@@ -47,5 +93,9 @@ class CreateCinemaSchema extends Migration
      */
     public function down()
     {
+        Schema::dropIfExists('booking');
+        Schema::dropIfExists('prices');
+        Schema::dropIfExists('movie_shows');
+        Schema::dropIfExists('movies');
     }
 }
