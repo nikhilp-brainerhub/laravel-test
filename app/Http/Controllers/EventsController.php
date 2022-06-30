@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Event;
+use App\Models\Workshop;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
@@ -183,5 +184,9 @@ class EventsController extends BaseController
 
     public function getFutureEventsWithWorkshops() {
         // throw new \Exception('implement in coding task 2');
+        // get workshops not started...
+        $ws_query = Workshop::select('event_id')->where('start', '>', \Carbon\Carbon::today()->toDateString());
+        $events = Event::with('workshops')->whereIn('id', $ws_query)->get()->toArray();
+        return response()->json($events);
     }
 }
